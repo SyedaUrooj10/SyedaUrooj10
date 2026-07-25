@@ -1,0 +1,48 @@
+name: GitHub Jet Heatmap
+
+on:
+  workflow_dispatch:
+
+  schedule:
+    - cron: "0 0 * * *"
+
+permissions:
+  contents: write
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+
+    env:
+      GH_USERNAME: SyedaUrooj10
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      OUTPUT_PATH: dark.svg
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Generate Dark SVG
+        run: node generate.mjs
+
+      - name: Generate Light SVG
+        run: cp dark.svg light.svg
+
+      - name: Commit Changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add dark.svg light.svg
+
+          git diff --cached --quiet || git commit -m "Update GitHub Jet Heatmap"
+
+          git push
